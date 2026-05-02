@@ -129,6 +129,7 @@ export default function BrandStrategyTool() {
   const [data, setData] = useState(initialState);
   const [unlocked, setUnlocked] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [aiLoading, setAiLoading] = useState({});
 
   // Persistence
   useEffect(() => {
@@ -171,6 +172,27 @@ export default function BrandStrategyTool() {
   }, [data]);
 
   const update = (patch) => setData(prev => ({ ...prev, ...patch }));
+
+  const handleAIGenerate = async (field, prompt) => {
+    setAiLoading(prev => ({ ...prev, [field]: true }));
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt + "\n\nBrand: " + (data.brandName || '') }]
+        })
+      });
+      const result = await response.json();
+      const text = result.content?.find(b => b.type === 'text')?.text?.trim();
+      if (text) update({ [field]: text });
+    } catch { alert('AI generation failed'); }
+    finally { setAiLoading(prev => ({ ...prev, [field]: false })); }
+  };
+
+  const loadExample = (exampleData) => { update(exampleData); setStep(1); };
 
   const handleNext = () => {
     if (step === FREE_STEPS && !unlocked) {
@@ -257,7 +279,7 @@ const handleUnlock = async ({ couponCode, isFree, finalPriceINR, email }) => {
     <div className="vw-tool">
       <style>{styles}</style>
 
-      <Header step={step} unlocked={unlocked} onJump={(s) => s <= FREE_STEPS || unlocked ? setStep(s) : setShowPaywall(true)} brandName={data.brandName} />
+      <Header step={step} unlocked={unlocked} onJump={(s) => s <= FREE_STEPS || unlocked ? setStep(s) : setShowPaywall(true)} brandName={data.brandName} onShowExamples={() => setStep(11)} />
 
       <main className="container">
         {step === 0 && <Welcome data={data} update={update} onStart={() => setStep(1)} />}
@@ -271,6 +293,7 @@ const handleUnlock = async ({ couponCode, isFree, finalPriceINR, email }) => {
         {step === 8 && <StepVoice data={data} update={update} unlocked={unlocked} synthesis={synthesis} />}
         {step === 9 && <StepTagline data={data} update={update} unlocked={unlocked} />}
         {step === 10 && <FinalReport data={data} synthesis={synthesis} unlocked={unlocked} />}
+        {step === 11 && <ExamplesPage onLoadExample={loadExample} onBack={() => setStep(0)} />}
       </main>
 
       {step >= 1 && step <= TOTAL_STEPS && (
@@ -292,7 +315,7 @@ const handleUnlock = async ({ couponCode, isFree, finalPriceINR, email }) => {
 
 // ─── Header / progress ──────────────────────────────────────────────────
 
-function Header({ step, unlocked, onJump, brandName }) {
+function Header({ step, unlocked, onJump, brandName, onShowExamples }) {
   return (
     <header className="vw-header">
       <div className="vw-header-inner">
@@ -300,6 +323,7 @@ function Header({ step, unlocked, onJump, brandName }) {
         <div className="brand-tag">
           {brandName ? <em>{brandName}</em> : <span className="muted">Brand strategy in session</span>}
         </div>
+        <button className="btn-examples" onClick={() => onShowExamples && onShowExamples()}>See Examples</button>
         <div className="step-indicator">
           {step === 0 ? 'Begin' : step <= TOTAL_STEPS ? `Step ${step} of ${TOTAL_STEPS}` : 'Report'}
         </div>
@@ -1265,6 +1289,20 @@ const styles = `
   .tick.current { background: var(--paper-warm); color: var(--ink); border-color: var(--ink); }
   .tick.locked { opacity: 0.4; cursor: not-allowed; }
   .tick:hover:not(.locked):not(.current) { border-color: var(--ink); color: var(--ink); }
+
+  /* Examples button */
+  .btn-examples {
+    background: transparent;
+    border: 0.5px solid var(--ink);
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-examples:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
 
   /* Container */
   .container { max-width: 800px; margin: 0 auto; padding: 80px 40px 40px; }
