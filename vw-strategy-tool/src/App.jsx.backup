@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import ExamplesPage from "./components/ExamplesPage";
-import { FieldHelper, AIGenerateButton, AI_PROMPTS } from "./components/AIHelpers";
 
 /**
  * V&W Brand Strategy Tool — 9-step flow
