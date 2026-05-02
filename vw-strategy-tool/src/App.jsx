@@ -279,11 +279,11 @@ const handleUnlock = async ({ couponCode, isFree, finalPriceINR, email }) => {
 
       <main className="container">
         {step === 0 && <Welcome data={data} update={update} onStart={() => setStep(1)} />}
-        {step === 1 && <StepPurpose data={data} update={update} synthesis={synthesis} />}
-        {step === 2 && <StepVision data={data} update={update} synthesis={synthesis} />}
+        {step === 1 && <StepPurpose data={data} update={update} synthesis={synthesis} onAIGenerate={handleAIGenerate} aiLoading={aiLoading} />}
+        {step === 2 && <StepVision data={data} update={update} synthesis={synthesis} onAIGenerate={handleAIGenerate} aiLoading={aiLoading} />}
         {step === 3 && <StepValues data={data} update={update} />}
-        {step === 4 && <StepAudience data={data} update={update} />}
-        {step === 5 && <StepMarket data={data} update={update} synthesis={synthesis} />}
+        {step === 4 && <StepAudience data={data} update={update} onAIGenerate={handleAIGenerate} aiLoading={aiLoading} />}
+        {step === 5 && <StepMarket data={data} update={update} synthesis={synthesis} onAIGenerate={handleAIGenerate} aiLoading={aiLoading} />}
         {step === 6 && <StepAwareness data={data} update={update} />}
         {step === 7 && <StepPersonality data={data} update={update} unlocked={unlocked} />}
         {step === 8 && <StepVoice data={data} update={update} unlocked={unlocked} synthesis={synthesis} />}
@@ -381,7 +381,7 @@ function Welcome({ data, update, onStart }) {
 
 // ─── Step 1: Purpose ────────────────────────────────────────────────────
 
-function StepPurpose({ data, update, synthesis }) {
+function StepPurpose({ data, update, synthesis, onAIGenerate, aiLoading }) {
   return (
     <StepFrame act="Brand Core" stepNum="01" title={<>Brand <em>purpose</em></>} subtitle="Why you do what you do — beyond making money.">
       <Quote attribution="Simon Sinek">
@@ -391,6 +391,7 @@ function StepPurpose({ data, update, synthesis }) {
       <div className="grid-2">
         <Field label="What" hint="The products you sell, services you offer, jobs you perform.">
           <textarea value={data.purposeWhat} onChange={(e) => update({ purposeWhat: e.target.value })} rows="3" placeholder="e.g. We design and manufacture marble surfaces for premium homes." />
+          <AIGenerateButton field="purposeWhat" loading={aiLoading.purposeWhat} onGenerate={() => onAIGenerate('purposeWhat', AI_PROMPTS.purposeWhat)} />
         </Field>
         <Field label="How" hint="The values, actions, and guiding principles that make you stand out.">
           <textarea value={data.purposeHow} onChange={(e) => update({ purposeHow: e.target.value })} rows="3" placeholder="e.g. Direct from quarry, transparent sourcing, design-led service." />
@@ -399,6 +400,7 @@ function StepPurpose({ data, update, synthesis }) {
 
       <Field label="Why" hint="What your brand stands for. The cause, the belief.">
         <textarea value={data.purposeWhy} onChange={(e) => update({ purposeWhy: e.target.value })} rows="2" placeholder="e.g. Marble buying should feel human, not transactional." />
+        <AIGenerateButton field="purposeWhy" loading={aiLoading.purposeWhy} onGenerate={() => onAIGenerate('purposeWhy', AI_PROMPTS.purposeWhy)} />
       </Field>
 
       <Divider label="Now we synthesize" />
@@ -406,10 +408,12 @@ function StepPurpose({ data, update, synthesis }) {
       <Field label="Contribution" hint="The specific contribution you make. Start with an action verb.">
         <input type="text" value={data.purposeContribution} onChange={(e) => update({ purposeContribution: e.target.value })} placeholder="e.g. inspire others to do the things that inspire them" />
         <ActionVerbHelper onPick={(v) => update({ purposeContribution: v + ' ' })} />
+        <AIGenerateButton field="purposeContribution" loading={aiLoading.purposeContribution} onGenerate={() => onAIGenerate('purposeContribution', AI_PROMPTS.purposeContribution)} />
       </Field>
 
       <Field label="Impact" hint="The result of that contribution. What you allow others to do or to be.">
         <input type="text" value={data.purposeImpact} onChange={(e) => update({ purposeImpact: e.target.value })} placeholder="e.g. together we can change the world for the better" />
+        <AIGenerateButton field="purposeImpact" loading={aiLoading.purposeImpact} onGenerate={() => onAIGenerate('purposeImpact', AI_PROMPTS.purposeImpact)} />
       </Field>
 
       <SynthesisCard
@@ -447,7 +451,7 @@ function ActionVerbHelper({ onPick }) {
 
 // ─── Step 2: Vision ─────────────────────────────────────────────────────
 
-function StepVision({ data, update, synthesis }) {
+function StepVision({ data, update, synthesis, onAIGenerate, aiLoading }) {
   return (
     <StepFrame act="Brand Core" stepNum="02" title={<>Brand <em>vision</em></>} subtitle="A vivid description of where you're going.">
       <Quote attribution="John C. Maxwell">
@@ -460,12 +464,15 @@ function StepVision({ data, update, synthesis }) {
         </TimelineCol>
         <TimelineCol label="5 years" hint="What you want to achieve. Growth.">
           <textarea value={data.vision5} onChange={(e) => update({ vision5: e.target.value })} rows="3" placeholder="In 5 years…" />
+          <AIGenerateButton field="vision5" loading={aiLoading.vision5} onGenerate={() => onAIGenerate('vision5', AI_PROMPTS.vision5)} />
         </TimelineCol>
         <TimelineCol label="10 years" hint="How big. Market share.">
           <textarea value={data.vision10} onChange={(e) => update({ vision10: e.target.value })} rows="3" placeholder="In 10 years…" />
+          <AIGenerateButton field="vision10" loading={aiLoading.vision10} onGenerate={() => onAIGenerate('vision10', AI_PROMPTS.vision10)} />
         </TimelineCol>
         <TimelineCol label="15 years" hint="The impact. The category change.">
           <textarea value={data.vision15} onChange={(e) => update({ vision15: e.target.value })} rows="3" placeholder="In 15 years…" />
+          <AIGenerateButton field="vision15" loading={aiLoading.vision15} onGenerate={() => onAIGenerate('vision15', AI_PROMPTS.vision15)} />
         </TimelineCol>
       </div>
 
@@ -563,7 +570,7 @@ function StepValues({ data, update }) {
 
 // ─── Step 4: Audience ───────────────────────────────────────────────────
 
-function StepAudience({ data, update }) {
+function StepAudience({ data, update, onAIGenerate, aiLoading }) {
   return (
     <StepFrame act="Brand Positioning" stepNum="04" title={<>Target <em>audience</em></>} subtitle="The more specific, the more they'll invest in you.">
       <Quote attribution="Donald Miller">
@@ -577,9 +584,11 @@ function StepAudience({ data, update }) {
       <div className="grid-2">
         <Field label="Goals" hint="Their objectives. Strategic aspirations. What they hope for.">
           <textarea value={data.audienceGoals} onChange={(e) => update({ audienceGoals: e.target.value })} rows="4" />
+          <AIGenerateButton field="audienceGoals" loading={aiLoading.audienceGoals} onGenerate={() => onAIGenerate('audienceGoals', AI_PROMPTS.audienceGoals)} />
         </Field>
         <Field label="Problems" hint="Pain points. Core challenges. What blocks them.">
           <textarea value={data.audienceProblems} onChange={(e) => update({ audienceProblems: e.target.value })} rows="4" />
+          <AIGenerateButton field="audienceProblems" loading={aiLoading.audienceProblems} onGenerate={() => onAIGenerate('audienceProblems', AI_PROMPTS.audienceProblems)} />
         </Field>
         <Field label="Impact" hint="What they fear because of those problems. The internal cost.">
           <textarea value={data.audienceImpact} onChange={(e) => update({ audienceImpact: e.target.value })} rows="4" />
@@ -594,7 +603,7 @@ function StepAudience({ data, update }) {
 
 // ─── Step 5: Market ─────────────────────────────────────────────────────
 
-function StepMarket({ data, update, synthesis }) {
+function StepMarket({ data, update, synthesis, onAIGenerate, aiLoading }) {
   return (
     <StepFrame act="Brand Positioning" stepNum="05" title={<>Market <em>analysis</em></>} subtitle="Choose to stand for something. Not everything.">
       <Quote attribution="Al Ries">
@@ -616,10 +625,12 @@ function StepMarket({ data, update, synthesis }) {
 
       <Field label="Difference" hint="The gap in the market. How you stand out.">
         <textarea value={data.marketDifference} onChange={(e) => update({ marketDifference: e.target.value })} rows="3" placeholder="e.g. meets you in your home, not at the showroom" />
+        <AIGenerateButton field="marketDifference" loading={aiLoading.marketDifference} onGenerate={() => onAIGenerate('marketDifference', AI_PROMPTS.marketDifference)} />
       </Field>
 
       <Field label="Benefit" hint="The end benefit. Emotional, intangible.">
         <textarea value={data.marketBenefit} onChange={(e) => update({ marketBenefit: e.target.value })} rows="3" placeholder="e.g. confidence in a decision they'll live with for thirty years" />
+        <AIGenerateButton field="marketBenefit" loading={aiLoading.marketBenefit} onGenerate={() => onAIGenerate('marketBenefit', AI_PROMPTS.marketBenefit)} />
       </Field>
 
       <SynthesisCard
@@ -1299,6 +1310,43 @@ const styles = `
     background: var(--ink);
     color: var(--paper);
   }
+
+  /* AI Generate button */
+  .ai-generate-btn {
+    margin-top: 8px;
+    background: transparent;
+    border: 0.5px solid var(--rule-strong);
+    color: var(--ink);
+    padding: 6px 12px;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .ai-generate-btn:hover:not(:disabled) {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ai-generate-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+
+  /* Field helper */
+  .field-helper {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--paper-warm);
+    border-left: 2px solid var(--ink);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .field-helper .helper-hint { color: var(--ink); margin-bottom: 4px; }
+  .field-helper .helper-good { color: var(--ink); opacity: 0.7; }
+  .field-helper .helper-avoid { color: var(--ink); opacity: 0.7; margin-top: 2px; }
 
   /* Container */
   .container { max-width: 800px; margin: 0 auto; padding: 80px 40px 40px; }
