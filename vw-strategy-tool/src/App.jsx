@@ -176,19 +176,15 @@ export default function BrandStrategyTool() {
   const handleAIGenerate = async (field, prompt) => {
     setAiLoading(prev => ({ ...prev, [field]: true }));
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch(`${API_BASE}/ai-generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1024,
-          messages: [{ role: 'user', content: prompt + "\n\nBrand: " + (data.brandName || '') }]
-        })
+        body: JSON.stringify({ prompt, brand: data.brandName || '' })
       });
       const result = await response.json();
-      const text = result.content?.find(b => b.type === 'text')?.text?.trim();
-      if (text) update({ [field]: text });
-    } catch { alert('AI generation failed'); }
+      if (!response.ok) throw new Error(result.error || 'AI generation failed');
+      if (result.text) update({ [field]: result.text });
+    } catch (e) { alert(e.message || 'AI generation failed'); }
     finally { setAiLoading(prev => ({ ...prev, [field]: false })); }
   };
 
